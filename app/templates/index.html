@@ -1,0 +1,63 @@
+{%  extends "layout.html" %}
+
+{% block body %}
+    <div class="container">
+
+        <div class="intro">
+            <h1>
+                KorBERT Q&A Demo
+            </h1>
+            <p>
+            ETRI에서 제공하는 KorBERT 모델을 사용해 finetuning한 QA 데모 페이지입니다.
+            </p>
+        </div>
+        <div id="store-context" class="context">
+            <div class="wrapper">
+                <div>
+                    <h4>텍스트</h4>
+                    <p>
+                    <input type="text" placeholder="공룡이름을 입력해주세요." id=myInput>
+                    <button type="button" id="wiki-btn" class="wiki_btn">선택</button>
+                    </p>
+                    <textarea id=text-data placeholder="카테고리에서 context를 선택해주시거나 직접 텍스트를 입력해주세요."></textarea>
+                </div>
+                <div>
+                    <h5 class="or">or</h5>
+                </div>
+                <div>
+                    <h4 class="reduced-margin-h2">파일 업로드</h4>
+                    {{ dropzone.create(action='process_input') }}
+                    <button id="upload-btn" class="btn btn-secondary">업로드</button>
+                    {{ dropzone.load_js() }}
+                    {{ dropzone.config(custom_init='dz = this;document.getElementById("upload-btn").addEventListener("click", function handler(e) {dz.processQueue();});',
+                     custom_options="autoProcessQueue: false, addRemoveLinks: true, parallelUploads: 20") }}
+                </div>
+            </div>
+            <button id="store-btn" class="btn btn-primary">Context 저장하기</button>
+        </div>
+
+        <div id="reset-context" class="hidden context">
+            <button id="reset-btn" class="btn btn-secondary">Context 초기화</button>
+            <h4><div id="context-title" class="context-display"></div></h4>
+            <div id="context-data" class="context-display"></div>
+            <div id="context-tokenized" class="context-display hidden"></div>
+        </div>
+
+        <div id="question-input" class="question hidden">
+            <h4>질문</h4>
+            <textarea id=question-data placeholder="질문을 적어주세요. 질문이 여러 개일 경우 엔터로 구분해주세요."></textarea>
+            <button id="process" class="btn btn-primary">정답 찾기</button>
+        </div>
+
+        <div class="squad-results">
+        <div>
+            <span id=result></span>
+        </div>
+    </div>
+    <div class="history hidden">
+    <h3> History <a id="toggle-history">(hide)</a></h3>
+        <span id="history"></span>
+    </div>
+</div>
+
+{% endblock %}

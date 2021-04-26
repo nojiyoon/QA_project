@@ -1,0 +1,29 @@
+<ul class="answer-list">
+     {% for packaged_prediction in predict %}
+                    {% for context in packaged_prediction[1] %}
+
+                            {% for question in context[1] %}
+                            <li>
+                                <b>Q: </b>
+                                {{ question[0] }}
+                                <ul>
+                                    <li>
+                                        <b>A: </b>
+                                {{ question[1] }}
+                            </li>
+                                    <li>
+                                <b>Timestamp: </b>{{ question[2] }}
+                            </li>
+                                    <li>
+                                <b>Loading Time: </b>{{ question[3] }}
+                            </li>
+                                    <li>
+                                        <a href={{ question[4] }} onclick={{ question[5] }} >Show in text</a>
+
+                            </li>
+                                </ul>
+                            </li>
+                            {% endfor %}
+                    {% endfor %}
+    {% endfor %}
+</ul>
