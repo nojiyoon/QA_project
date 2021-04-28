@@ -1,7 +1,6 @@
 # flask_app/server.py​
 import datetime
 import re
-import wikipediaapi
 
 from flask_ngrok import run_with_ngrok 
 from flask import Flask, request, jsonify, render_template, session, url_for, redirect
@@ -13,11 +12,13 @@ import uuid
 import secrets
 
 from run_squad import evaluate, load_model
+from run_sent_classify import sentiment_predict
 from squad_generator import convert_text_input_to_squad, \
     convert_file_input_to_squad, convert_context_and_questions_to_squad
 from settings import *
 import requests
 import pdb
+import wikipediaapi
 
 # infer를 위해 estimator와 tokenizer를 load_model 함수를 이용해 불러옵니다. 
 estimator, tokenizer = load_model()
@@ -77,34 +78,15 @@ def process_input():
 
 @app.route("/_wiki_api")
 def wiki_api():
-  text = unquote(request.args.get("my_input", "", type=str)).strip()
-  wiki = wikipediaapi.Wikipedia("ko")
-  page_py = wiki.page(text)
-  if page_py.exists():
-    res_title = page_py.title
-    res_sum = page_py.summary
-  else:
-    passthrough
-
-  return jsonify(context='\n'.join([res_title, res_sum]))
-
-@app.route("/_random_page")
-def random_page():
-    # r = wikipedia.random(1)
-    # try:
-    #     res = wikipedia.page(r)
-    #     res_title = res.title
-    #     res_sum = res.summary
-    # except wikipedia.exceptions.DisambiguationError as e:
-    #     return random_page()
-    # return jsonify(context='\n'.join([res_title, res_sum]))
-    if proxyDict:
-        r = requests.get("https://en.wikipedia.org/api/rest_v1/page/random/summary", proxies=proxyDict)
+    text = unquote(request.args.get("my_input", "", type=str)).strip()
+    wiki = wikipediaapi.Wikipedia("ko")
+    page_py = wiki.page(text)
+    if page_py.exists():
+        res_title = page_py.title
+        res_sum = page_py.summary[:1000]
     else:
-        r = requests.get("https://en.wikipedia.org/api/rest_v1/page/random/summary")
-    page = r.json()
-    res_title = page["title"]
-    res_sum = page["extract"]
+        pass
+
     return jsonify(context='\n'.join([res_title, res_sum]))
 
 def predict_from_text_squad(input):
@@ -160,13 +142,22 @@ def evaluate_input(squad_dict, passthrough=False):
         return predictions, squad_dict, dt
     return predictions, dt
 
+@app.route('/_evaluate_helper')
+def evaluate_helper():
+    eval_text = request.args.get("evaluate_data", "", type=str).strip()
+    prediction = sentiment_predict(eval_text)
+    if prediction and eval_text:
+        return jsonify(result=
+                       render_template('live_eval.html',
+                                       predict=[prediction],
+                                       eval_text=[eval_text]))
+    return jsonify(result="")
+
 @app.route('/_input_helper')
 def input_helper():
-    # print(session['context'])
     context = session['context'][-1]
     text = context[0]
     id = context[1]
-    # print(text)
     questions = unquote(request.args.get("question_data", "", type=str)).strip()
     app.logger.info("input text: {}\n\nquestions:{}".format(text, questions))
     predictions, highlight = predict_from_input_squad(text, questions, id)

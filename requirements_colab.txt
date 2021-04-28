@@ -2,3 +2,5 @@ Flask==1.1.1
 tensorflow_gpu==1.15
 flask_dropzone
 flask-ngrok
+konlpy
+Wikipedia-API

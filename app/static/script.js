@@ -5,8 +5,22 @@ $(function() {
       }, function(data) {
         $("#result").prepend(data.result);
         $("#question-data").val("");
+        $("#end-process").show();
         var hilite = new Function(data.highlight_script);
         hilite()
+      });
+      return false;
+    });
+  });
+
+$(function() {
+    $('button#evaluate').on('click', function() {
+      $.getJSON($SCRIPT_ROOT + '/_evaluate_helper', {
+        evaluate_data: $('#evaluate-data').val()
+      }, function(data) {
+        $("#senti-result").prepend(data.result);
+        $("#evaluate-input").show();
+        $("#evaluate-data").val("");
       });
       return false;
     });
@@ -17,6 +31,23 @@ $('textarea').each(function () {
 }).on('input', function () {
   this.style.height = 'auto';
   this.style.height = (this.scrollHeight) + 'px';
+});
+
+$(function() {
+    $('button#end-btn').on('click', function() {
+        $("#evaluate-input").show();
+        $("#store-context").hide();
+        $("#text-data").val("");
+        $("#question-data").val("");
+        $("#reset-context").hide();
+        $("#question-input").hide();
+        $("#intro-page").hide();
+        $("#end-process").hide();
+        $("#context-title").html("");
+        $("#context-data").html("");
+        $("#result").html("");
+        $(".history").hide();
+    });
 });
 
 $(function() {
@@ -46,6 +77,8 @@ $('button#reset-btn').on('click', function() {
     $("#store-context").show();
     $("#reset-context").hide();
     $("#question-input").hide();
+    $("#evaluate-input").hide();
+    $("#end-process").hide();
 
     $(".history").show();
 
@@ -58,6 +91,7 @@ $('button#reset-btn').on('click', function() {
     $("#context-title").html("");
     $("#context-data").html("");
     $("#result").html("");
+    $("#senti-result").html("");
     $('textarea').trigger('input');
 });
 
@@ -78,19 +112,6 @@ $(function() {
       return false;
     });
 });
-
-/*
-$(function() {
-    $('button#random-btn').on('click', function() {
-      $.getJSON($SCRIPT_ROOT + '/_random_page', {
-      }, function(data) {
-        $("#text-data").val(data.context);
-        $('textarea').trigger('input');
-      });
-      return false;
-    });
-});
-*/
 
 function highlight(element, start, end) {
     if (start > -1) {
